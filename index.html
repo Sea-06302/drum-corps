@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🥁 鼓号队训练终端 — 奚佳婧老师</title>
+<style>
+
+:root{--red:#C41E3A;--gold:#D4A017;--navy:#1B2A4A;--bg:#FFF8F0;--card:#FFF;--text:#2C2C2C;--sub:#666;--border:#E8D5C4;--accent:#F0E6D8;--shadow:0 2px 12px rgba(0,0,0,.06);--beat-active:#C41E3A;--beat-inactive:#DDD}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+.header{background:linear-gradient(135deg,var(--red),#A0182E);color:#fff;padding:16px 20px;text-align:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(196,30,58,.3)}
+.header h1{font-size:clamp(18px,4vw,24px);font-weight:700;letter-spacing:1px}
+.header .subtitle{font-size:13px;opacity:.85;margin-top:2px}
+.tab-nav{display:flex;background:#fff;border-bottom:2px solid var(--border);position:sticky;top:78px;z-index:99;overflow-x:auto}
+.tab-btn{flex:1;min-width:80px;padding:12px 6px;border:none;background:none;font-size:13px;font-weight:600;color:var(--sub);cursor:pointer;white-space:nowrap;transition:.2s;border-bottom:3px solid transparent;font-family:inherit}
+.tab-btn.active{color:var(--red);border-bottom-color:var(--red);background:#FFF5F5}
+.tab-btn .emoji{font-size:18px;display:block;margin-bottom:2px}
+.main{max-width:900px;margin:0 auto;padding:16px 12px 80px}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.card{background:var(--card);border-radius:12px;padding:18px;margin-bottom:14px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.card h2{font-size:18px;color:var(--navy);margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid var(--accent)}
+.card h3{font-size:15px;color:var(--red);margin:14px 0 6px}
+.card h4{font-size:14px;color:var(--navy);margin:12px 0 4px}
+.card p{margin:6px 0;font-size:14px}
+.card ul,.card ol{padding-left:20px;margin:6px 0;font-size:14px}
+.card li{margin:3px 0}
+.card table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px}
+.card th{background:var(--navy);color:#fff;padding:8px;text-align:left}
+.card td{padding:6px 8px;border-bottom:1px solid var(--border)}
+.tip-box{background:#FFF8E1;border-left:4px solid var(--gold);padding:10px 14px;border-radius:0 8px 8px 0;margin:10px 0;font-size:13px}
+.warn-box{background:#FFEBEE;border-left:4px solid var(--red);padding:10px 14px;border-radius:0 8px 8px 0;margin:10px 0;font-size:13px}
+.step-box{background:#E8F5E9;border-left:4px solid #4CAF50;padding:10px 14px;border-radius:0 8px 8px 0;margin:10px 0;font-size:13px}
+.teacher-talk{background:#E3F2FD;border-left:4px solid #1565C0;padding:10px 14px;border-radius:0 8px 8px 0;margin:10px 0;font-size:13px;font-style:italic}
+.checklist label{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:14px}
+.checklist input[type=checkbox]{width:18px;height:18px;accent-color:var(--red)}
+.checklist input:checked+span{text-decoration:line-through;color:#999}
+.bpm-display{font-size:64px;font-weight:900;color:var(--red);line-height:1;font-family:monospace;text-align:center}
+.bpm-label{font-size:13px;color:var(--sub);margin-top:2px;text-align:center}
+.beat-indicator{display:flex;justify-content:center;gap:10px;margin:14px 0}
+.beat-dot{width:32px;height:32px;border-radius:50%;background:var(--beat-inactive);transition:.08s;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff}
+.beat-dot.active{background:var(--beat-active);transform:scale(1.25);box-shadow:0 0 18px rgba(196,30,58,.5)}
+.beat-dot.accent{background:var(--gold)}
+.beat-dot.accent.active{background:#FF6B00;box-shadow:0 0 22px rgba(255,107,0,.5)}
+.tempo-slider{width:100%;margin:10px 0;-webkit-appearance:none;height:6px;border-radius:3px;background:var(--border);outline:none}
+.tempo-slider::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;border-radius:50%;background:var(--red);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.tempo-btns,.preset-patterns{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:8px 0}
+.tempo-preset,.sig-btn,.pattern-btn,.sound-btn{padding:6px 12px;border:2px solid var(--border);border-radius:18px;background:#fff;font-size:12px;cursor:pointer;font-family:inherit;transition:.2s}
+.tempo-preset.active{border-color:var(--red);background:#FFF5F5;color:var(--red);font-weight:700}
+.sig-btn.active{border-color:var(--navy);background:#E8EAF6;color:var(--navy);font-weight:700}
+.sound-btn{font-size:15px;padding:10px 16px}
+.sound-btn:active{background:var(--red);color:#fff;transform:scale(.95)}
+.btn{padding:10px 24px;border:none;border-radius:22px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:.2s;display:inline-flex;align-items:center;gap:5px}
+.btn-play{background:var(--red);color:#fff;font-size:16px;padding:12px 36px;box-shadow:0 3px 14px rgba(196,30,58,.3)}
+.btn-play:active{transform:scale(.96)}
+.btn-play.playing{background:#666}
+.rhythm-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;margin:10px 0}
+.rhythm-cell{aspect-ratio:1;border-radius:5px;background:var(--beat-inactive);cursor:pointer;transition:.12s;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#999;border:2px solid transparent}
+.rhythm-cell.on{background:var(--red);color:#fff;border-color:#8B0015}
+.rhythm-cell.playing-now{box-shadow:0 0 14px rgba(196,30,58,.7);transform:scale(1.18);border-color:var(--gold)}
+.rhythm-label{display:flex;justify-content:space-between;margin-top:3px;font-size:10px;color:var(--sub)}
+.student-hero{text-align:center;padding:24px 8px}
+.student-hero .big-emoji{font-size:70px;animation:bounce 1s ease-in-out infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.student-hero h2{font-size:26px;color:var(--red);margin-top:10px}
+.progress-bar{height:6px;background:var(--border);border-radius:3px;margin:6px 0;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--gold));border-radius:3px;transition:width .4s}
+.speed-card{background:linear-gradient(135deg,#FFF9C4,#FFF176);border-radius:14px;padding:16px;text-align:center;margin-bottom:14px;border:3px solid var(--gold);cursor:pointer;transition:transform .2s}
+.speed-card:active{transform:scale(.97)}
+.speed-card .game-icon{font-size:40px}
+.speed-card .game-title{font-size:18px;font-weight:700;color:var(--navy);margin:6px 0}
+.speed-card .game-desc{font-size:12px;color:var(--sub)}
+.teacher-talk{background:#E3F2FD;border-left:4px solid #1565C0;padding:10px 14px;border-radius:0 8px 8px 0;margin:10px 0;font-size:13px;font-style:italic}
+.sound-btn{padding:8px 14px;border:2px solid var(--border);border-radius:18px;background:#fff;font-size:15px;cursor:pointer;font-family:inherit;transition:.2s}
+.sound-btn:active{background:var(--red);color:#fff;transform:scale(.95)}
+/* 图示容器 */
+.illust{text-align:center;margin:14px 0;padding:12px 8px;background:#FAFAFA;border-radius:10px;border:1px dashed var(--border)}
+.illust svg{display:block;margin:0 auto;max-width:100%}
+.illust .caption{font-size:11px;color:var(--sub);margin-top:6px}
+.illust-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:14px 0}
+.illust-row .illust{flex:1;min-width:120px;max-width:200px;margin:0}
+/* 纯CSS动画：走路小士兵 */
+.walk-soldier{display:flex;justify-content:center;gap:6px;margin:10px 0}
+.walk-soldier .step{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;animation:stepPulse 1s ease-in-out infinite}
+.walk-soldier .step:nth-child(1){animation-delay:0s}
+.walk-soldier .step:nth-child(2){animation-delay:.25s}
+.walk-soldier .step:nth-child(3){animation-delay:.5s}
+.walk-soldier .step:nth-child(4){animation-delay:.75s}
+.walk-soldier .step.big{background:#C41E3A;color:#fff;transform:scale(1)}.walk-soldier .step.small{background:#DDD;color:#999}
+@keyframes stepPulse{0%,100%{transform:scale(1)}15%{transform:scale(1.25)}30%{transform:scale(1)}}
+@media(max-width:600px){.tab-btn{font-size:11px;padding:10px 3px}.bpm-display{font-size:50px}.beat-dot{width:26px;height:26px;font-size:11px}.rhythm-grid{grid-template-columns:repeat(4,1fr)}.card{padding:14px}}
+@media print{.header,.tab-nav{display:none}.card{break-inside:avoid;box-shadow:none;border:1px solid #ccc;margin-bottom:8px}body{font-size:11px}}
+
+</style>
+</head>
+<body>
+<div class="header"><h1>🥁 鼓号队训练终端</h1><div class="subtitle">浦东新区东波小学 · 一年级 · 奚佳婧老师</div></div>
+<div class="tab-nav">
+<button class="tab-btn active" onclick="switchTab('teacher')"><span class="emoji">📖</span>教师自学</button>
+<button class="tab-btn" onclick="switchTab('student')"><span class="emoji">🎮</span>学生课堂</button>
+<button class="tab-btn" onclick="switchTab('tools')"><span class="emoji">🎵</span>节奏工具</button>
+<button class="tab-btn" onclick="switchTab('progress')"><span class="emoji">📋</span>训练进度</button>
+</div>
+<div class="main">
+<div class="tab-content active" id="tab-teacher">
+<div class="card"><h2>📌 欢迎，奚老师！</h2>
+<p>这个终端帮助你<strong>从零开始</strong>学习少先队鼓号队训练，然后教会一年级的小朋友。你不用有压力——一步一步跟着做就行。</p>
+<div class="tip-box"><strong>💡 使用建议：</strong>先看教师自学内容，练到自己会了，再切换到"学生课堂"标签看教案。遇到节奏问题就去"节奏工具"打开节拍器。</div>
+</div>
+
+<div class="card"><h2>模块一：认识少先队鼓号队</h2>
+<h3>什么是少先队鼓号队？</h3>
+<p>少先队鼓号队是中国少年先锋队的<strong>礼仪乐队</strong>，在升旗仪式、运动会开幕式、大队集会等场合演奏。由打击乐器和吹奏乐器组成，用整齐的鼓点展现少先队员的精神面貌。鼓号队训练属于少先队组织教育的一部分——它培养纪律意识、集体荣誉感和团队协作能力。</p>
+<h3>标准乐器配置</h3>
+<table><tr><th>乐器</th><th>标准配置数量</th><th>一年级能用吗</th><th>声音特点</th></tr>
+<tr><td>🥁 大鼓</td><td>1-2面</td><td style="color:#4CAF50">✅ 可以</td><td>低沉有力"咚——"</td></tr>
+<tr><td>🥁 小鼓</td><td>8-16面</td><td style="color:#4CAF50">✅ 可以</td><td>清脆密集"哒哒哒"</td></tr>
+<tr><td>🔔 大镲</td><td>2-4副</td><td style="color:#4CAF50">✅ 可以</td><td>响亮爆发"嚓——"</td></tr>
+<tr><td>🔔 小镲</td><td>4-8副</td><td style="color:#4CAF50">✅ 可以</td><td>清脆点缀"叮叮"</td></tr>
+<tr><td>🎺 小号</td><td>8-16把</td><td style="color:var(--red)">❌ 不适合</td><td>嘹亮旋律</td></tr></table>
+<div class="warn-box"><strong>⚠️ 为什么一年级不用小号：</strong>一年级学生（6-7岁）肺活量只有高年级的一半左右，嘴唇肌肉力量也不够。强行吹小号可能导致头晕甚至伤害。一年级鼓号队<strong>只训练打击乐部分</strong>。</div>
+<h3>核心概念：节奏和节拍有什么不同？</h3>
+<p><strong>节拍（拍子）</strong>——音乐中稳定重复的"脉搏"，就像心跳一样：均匀地、稳定地"一下、一下、一下"。</p>
+<p><strong>节奏</strong>——在稳定节拍之上，不同长短、不同强弱组合起来的"花纹"。就像在整齐的步伐中，有人快跑两步、有人跳一下。</p>
+<div class="tip-box"><strong>🍎 给小朋友的比喻：</strong>"节拍就像小士兵走路——左脚、右脚、左脚、右脚，很均匀。节奏呢，就是走路的时候有时候快跑两步，有时候停下来转个圈。节拍是骨架，节奏是衣服。"</div>
+</div>
+
+<div class="card"><h2>模块二：认识四四拍——核心节拍</h2>
+<h3>什么是四四拍？</h3>
+<p>四四拍（记作 4/4）：<strong>以四分音符为一拍，每小节有四拍</strong>。匀速数"一、二、三、四，一、二、三、四"，每四拍就是一个小节。</p>
+<h3>强弱规律</h3>
+<table><tr><th>拍位</th><th>第1拍</th><th>第2拍</th><th>第3拍</th><th>第4拍</th></tr>
+<tr><td><strong>力度</strong></td><td style="color:var(--red);font-weight:700">强拍 💪</td><td>弱拍</td><td style="color:#E67E00;font-weight:700">次强拍</td><td>弱拍</td></tr>
+<tr><td><strong>大鼓怎么打</strong></td><td>敲！</td><td>—</td><td>敲！</td><td>—</td></tr></table>
+<div class="illust"><svg viewBox="0 0 360 95" width="360" height="95"><defs><radialGradient id="sg"><stop offset="0%" stop-color="#C41E3A"/><stop offset="100%" stop-color="#FF8080"/></radialGradient><radialGradient id="wg"><stop offset="0%" stop-color="#AAA"/><stop offset="100%" stop-color="#DDD"/></radialGradient><radialGradient id="mg"><stop offset="0%" stop-color="#E67E00"/><stop offset="100%" stop-color="#FFB366"/></radialGradient></defs><circle cx="55" cy="30" r="24" fill="url(#sg)"><animate attributeName="r" values="24;30;24" dur="1s" repeatCount="indefinite"/></circle><text x="55" y="65" text-anchor="middle" font-size="13" fill="#C41E3A" font-weight="bold">第1拍</text><text x="55" y="80" text-anchor="middle" font-size="11" fill="#C41E3A">强拍 💪</text><circle cx="135" cy="35" r="14" fill="url(#wg)"><animate attributeName="r" values="14;16;14" dur="1s" begin="0.25s" repeatCount="indefinite"/></circle><text x="135" y="65" text-anchor="middle" font-size="13" fill="#999">第2拍</text><text x="135" y="80" text-anchor="middle" font-size="11" fill="#999">弱拍</text><circle cx="215" cy="33" r="18" fill="url(#mg)"><animate attributeName="r" values="18;23;18" dur="1s" begin="0.5s" repeatCount="indefinite"/></circle><text x="215" y="65" text-anchor="middle" font-size="13" fill="#E67E00" font-weight="bold">第3拍</text><text x="215" y="80" text-anchor="middle" font-size="11" fill="#E67E00">次强拍 👍</text><circle cx="295" cy="35" r="14" fill="url(#wg)"><animate attributeName="r" values="14;16;14" dur="1s" begin="0.75s" repeatCount="indefinite"/></circle><text x="295" y="65" text-anchor="middle" font-size="13" fill="#999">第4拍</text><text x="295" y="80" text-anchor="middle" font-size="11" fill="#999">弱拍</text><line x1="80" y1="45" x2="120" y2="45" stroke="#DDD" stroke-width="1"/><line x1="150" y1="45" x2="195" y2="45" stroke="#DDD" stroke-width="1"/><line x1="235" y1="45" x2="280" y2="45" stroke="#DDD" stroke-width="1"/></svg><div class="caption">▲ 图形越大 = 力度越大。注意看：大→小→中→小 的呼吸规律</div></div>
+<p>大鼓只打<strong>强拍和次强拍</strong>（第1拍和第3拍），这是鼓号队大鼓最基本的规则。</p>
+<div class="step-box"><strong>🎯 跟练（现在就试试）：</strong><ol>
+<li>右手拍桌面，大声数"一-二-三-四、一-二-三-四"</li>
+<li>"一"重重拍，"三"稍重，"二"和"四"轻轻拍</li>
+<li>去"节奏工具"标签打开节拍器，设到80，跟着拍</li>
+<li>反复练到不数也能自然打出强-弱-次强-弱</li></ol></div>
+<div class="warn-box"><strong>⚠️ 新手最容易犯的错：</strong>把四拍打成一样重。记住：第1拍是"大力士"，第3拍是"小力士"，第2和第4是"小精灵"。</div>
+</div>
+
+<div class="card"><h2>模块三：大鼓演奏方法</h2>
+<p>大鼓是鼓号队的<strong>"心跳"</strong>——它给出最基本的节拍，所有其他乐器都跟着大鼓走。大鼓手就是整个队伍的"指挥官"。</p>
+<h3>握槌姿势</h3><p>右手握鼓槌（大鼓只有一个槌），像握杯子把手，不要太紧——虎口留空隙。</p>
+<h3>击打位置</h3><p>敲击鼓面<strong>中心偏上</strong>约5-8厘米处，声音最饱满。不要敲鼓边缘——声音会发虚。</p>
+<div class="illust"><svg viewBox="0 0 240 180" width="240" height="180"><ellipse cx="120" cy="75" rx="90" ry="35" fill="#FFF8E8" stroke="#8B6914" stroke-width="2.5"/><path d="M30,75 Q30,120 120,130 Q210,120 210,75" fill="#D4A96A" stroke="#8B6914" stroke-width="2"/><ellipse cx="120" cy="75" rx="92" ry="37" fill="none" stroke="#C4A060" stroke-width="1" stroke-dasharray="6,4"/><line x1="30" y1="75" x2="210" y2="75" stroke="#E0D0B0" stroke-width="0.8" stroke-dasharray="3,5"/><line x1="120" y1="40" x2="120" y2="110" stroke="#E0D0B0" stroke-width="0.8" stroke-dasharray="3,5"/><circle cx="120" cy="62" r="9" fill="#C41E3A" opacity="0.8"><animate attributeName="r" values="9;13;9" dur="1.3s" repeatCount="indefinite"/></circle><line x1="120" y1="62" x2="172" y2="32" stroke="#C41E3A" stroke-width="1.5"/><circle cx="172" cy="30" r="3" fill="#C41E3A"/><text x="182" y="28" font-size="12" fill="#C41E3A" font-weight="bold">最佳击打点</text><text x="182" y="43" font-size="10" fill="#888">中心偏上5-8厘米</text><text x="18" y="18" font-size="10" fill="#AAA">鼓面俯视图</text><text x="172" y="60" font-size="10" fill="#999">❌ 边缘=声音虚</text></svg><div class="caption">▲ 红色脉冲点 = 最佳击打位置（鼓面中心偏上）。敲在这里声音最饱满</div></div>
+<h3>发力方式</h3><p>用<strong>手腕</strong>力量，不是手臂。想象"扇扇子"的感觉——手腕灵活甩动，手臂固定。</p>
+<h3>最关键：击打后弹起！</h3><p>鼓槌击打鼓面后必须<strong>立刻弹起</strong>，不能压在鼓面上！压在鼓面上声音会闷住——听起来是"噗"而不是"咚"。</p>
+<div class="illust"><svg viewBox="0 0 280 165" width="280" height="165"><rect x="40" y="92" width="200" height="12" rx="4" fill="#DEB887" stroke="#8B6914" stroke-width="1.5"/><text x="245" y="102" font-size="9" fill="#999">鼓面</text><g><animateTransform attributeName="transform" type="translate" values="0,0;0,28;0,-4;0,0" dur="1s" repeatCount="indefinite" keyTimes="0;0.12;0.18;0.28" keySplines="0.4 0 1 1;0.1 0 0.2 1;0.3 0 0.6 1" calcMode="spline"/><line x1="140" y1="18" x2="140" y2="58" stroke="#A0522D" stroke-width="5" stroke-linecap="round"/><ellipse cx="140" cy="61" rx="8" ry="6" fill="#8B4513"/><line x1="135" y1="26" x2="145" y2="26" stroke="#654321" stroke-width="1.5"/><text x="152" y="22" font-size="9" fill="#654321">握手处</text></g><g><animate attributeName="opacity" values="0;0.5;0" dur="1s" begin="0.11s" repeatCount="indefinite"/><circle cx="140" cy="92" r="0" fill="#FF6B00"><animate attributeName="r" values="0;12;0" dur="1s" begin="0.11s" repeatCount="indefinite"/></circle></g><text x="140" y="130" text-anchor="middle" font-size="13" fill="#C41E3A" font-weight="bold">敲下去 → 马上弹起来！</text><text x="140" y="147" text-anchor="middle" font-size="11" fill="#999">像拍皮球，不是像按图钉 🏀</text><text x="220" y="130" font-size="10" fill="#C41E3A">✅ 正确</text><text x="20" y="147" font-size="10" fill="#AAA">❌ 压在鼓面上="噗"</text></svg><div class="caption">▲ 看鼓槌动作：击打后立刻弹回，绝不压在鼓面上。注意击打瞬间的橙色闪光——那就是声音发出的时刻</div></div>
+<h3>常见错误与纠正</h3><ul>
+<li>❌ 整个手臂一起甩 → ✅ 手臂固定，只用<strong>手腕</strong>发力</li>
+<li>❌ 鼓槌压在鼓面上 → ✅ 击打后<strong>立刻弹起</strong>，像拍皮球</li>
+<li>❌ 握槌太紧 → ✅ <strong>虚握</strong>，虎口留空隙，像捏一颗葡萄</li>
+<li>❌ 敲在鼓边缘 → ✅ 瞄准<strong>中心偏上</strong>5-8厘米</li>
+<li>❌ 节奏不稳 → ✅ 开节拍器，跟着练到不看也能稳</li></ul>
+<div class="step-box"><strong>🎯 练习任务：</strong><ol>
+<li>不开节拍器：右手在桌面练手腕发力，敲100下，注意弹起</li>
+<li>开节拍器80：第1、3拍敲，第2、4拍手停空中。练到20小节不出错</li>
+<li>开节拍器100：同上，20小节不出错</li>
+<li>上真鼓：先空手比划10次，再实际击打</li></ol></div>
+<div class="teacher-talk"><strong>📢 教学生时要注意：</strong><br>1. 一年级孩子手臂短，大鼓对他们太高。把鼓调到最低，或垫稳固小台阶<br>2. 先不拿鼓槌，空手做"手腕甩动"游戏5分钟，再发鼓槌<br>3. "敲完手马上弹起来，像碰到烫的东西一样缩回去"</div>
+<p><strong>进入下一模块条件：</strong>跟100 BPM节拍器，稳定敲第1和第3拍，连续20小节不抢拍不掉拍。</p>
+</div>
+
+<div class="card"><h2>模块四：小鼓演奏方法</h2>
+<p>小鼓是鼓号队的<strong>"主力部队"</strong>——数量最多，负责密集的节奏型，是鼓号队最有辨识度的声音。</p>
+<h3>握槌：对称握法</h3>
+<p>一年级只教<strong>对称握法</strong>（双手一模一样）。鼓棒夹在拇指和食指之间——拇指压住，食指勾住。其余三指自然收拢，轻轻贴住鼓棒下方。像握铅笔但稍松一点。手心里像有一只小蝴蝶——不能捏死，也不能让它飞走。</p>
+<div class="illust"><svg viewBox="0 0 280 140" width="280" height="140"><line x1="80" y1="18" x2="80" y2="85" stroke="#A0522D" stroke-width="5" stroke-linecap="round"/><ellipse cx="80" cy="88" rx="9" ry="6" fill="#8B4513"/><ellipse cx="80" cy="14" rx="6" ry="5" fill="#8B4513"/><ellipse cx="80" cy="50" rx="16" ry="22" fill="#FFD5B8" stroke="#E8B898" stroke-width="1.5"/><path d="M68,38 Q62,45 68,52" fill="none" stroke="#C4956A" stroke-width="2" stroke-linecap="round"/><text x="55" y="42" font-size="8" fill="#888">拇指压住</text><path d="M92,38 Q98,45 92,52" fill="none" stroke="#C4956A" stroke-width="2" stroke-linecap="round"/><text x="98" y="42" font-size="8" fill="#888">食指勾住</text><circle cx="80" cy="60" r="3" fill="none" stroke="#4CAF50" stroke-width="1" stroke-dasharray="2,2"/><text x="80" y="78" text-anchor="middle" font-size="7" fill="#4CAF50">空心虚握</text><line x1="105" y1="50" x2="130" y2="50" stroke="#888" stroke-width="0.5" stroke-dasharray="1,2"/><ellipse cx="195" cy="50" rx="16" ry="22" fill="#FFD5B8" stroke="#E8B898" stroke-width="1.5"/><path d="M179,38 Q169,30 163,25" fill="none" stroke="#C41E3A" stroke-width="1.5" marker-end="url(#xmark)"/><text x="155" y="35" font-size="8" fill="#C41E3A">❌ 拇指</text><text x="155" y="45" font-size="8" fill="#C41E3A">不能翘起</text><text x="80" y="105" text-anchor="middle" font-size="11" fill="#4CAF50" font-weight="bold">✅ 正确：像握铅笔</text><text x="195" y="105" text-anchor="middle" font-size="11" fill="#C41E3A" font-weight="bold">❌ 错误：拇指翘起</text><text x="140" y="125" text-anchor="middle" font-size="10" fill="#666">虎口贴住鼓棒，手心像藏了一只小蝴蝶 🦋</text></svg><div class="caption">▲ 对称握法：双手一模一样。拇指压住、食指勾住，虎口不留空隙</div></div>
+<h3>击打方法</h3>
+<p>手腕发力，鼓棒头打鼓面中心。击打后鼓棒<strong>自然弹起</strong>一到两厘米。左右手交替时保持<strong>力量均匀</strong>、<strong>高度一致</strong>。</p>
+<h3>常见错误</h3><ul>
+<li>❌ 鼓棒握太紧 → ✅ "手心里有一只小蝴蝶"</li>
+<li>❌ 两边力量不一样 → ✅ 先单手各练50下，再双手合</li>
+<li>❌ 越打越快 → ✅ 开节拍器，从60慢速开始</li>
+<li>❌ 鼓棒举太高 → ✅ 鼓棒头离鼓面5-10厘米</li>
+<li>❌ 低头看鼓棒 → ✅ 抬头看指挥，眼睛不看手</li></ul>
+<div class="step-box"><strong>🎯 练习任务：</strong><ol>
+<li>右手单手，节拍器60，每拍一下，练2分钟</li>
+<li>左手单手，同上，练2分钟</li>
+<li>双手交替（右-左-右-左），节拍器60→80→100→120</li></ol></div>
+<div class="teacher-talk"><strong>📢 教学生时要注意：</strong><br>1. 先用筷子或铅笔在课桌上练握法，正确了再发真鼓棒<br>2. 检查握法要一个一个看——轻轻拉鼓棒，太容易拉出=太松，拉不动=太紧<br>3. "像握铅笔"这个比喻对一年级特别有效</div>
+<p><strong>进入下一模块条件：</strong>双手交替跟100 BPM节拍器，稳定敲20小节，两边力量均匀，不低头看手。</p>
+</div>
+
+<div class="card"><h2>模块五：大镲和小镲演奏方法</h2>
+<p>镲的作用是增加声音的亮度和气势——像炒菜放盐，不放太淡，多了太咸。</p>
+<h3>持镲姿势</h3><p>双手各持一片。食指穿过镲中心皮带的环，拇指和其余手指在外侧辅助。镲片自然下垂。</p>
+<h3>击镲方法</h3><p>两片镲<strong>斜向相击</strong>（约30-45度角）——不是正面直碰！正面直碰声音闷且容易损坏镲片。击打后<strong>立即分开</strong>，让声音延长。短促止音时贴靠身体。</p>
+<div class="illust"><svg viewBox="0 0 300 170" width="300" height="170"><defs><linearGradient id="cymGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFE55C"/><stop offset="50%" stop-color="#FFC107"/><stop offset="100%" stop-color="#E6A800"/></linearGradient></defs><text x="60" y="18" text-anchor="middle" font-size="12" fill="#4CAF50" font-weight="bold">✅ 正确：斜向相击</text><g><animateTransform attributeName="transform" type="rotate" values="-8,85,82;8,85,82;-8,85,82" dur="0.8s" repeatCount="indefinite"/><ellipse cx="85" cy="82" rx="55" ry="10" fill="url(#cymGrad)" stroke="#B8860B" stroke-width="2" transform="rotate(-15,85,82)"/><circle cx="85" cy="82" r="8" fill="#D4A017" opacity="0.5"/></g><g><animateTransform attributeName="transform" type="rotate" values="8,85,82;-8,85,82;8,85,82" dur="0.8s" repeatCount="indefinite"/><ellipse cx="85" cy="82" rx="55" ry="10" fill="url(#cymGrad)" stroke="#B8860B" stroke-width="2" transform="rotate(15,85,82)"/><circle cx="85" cy="82" r="8" fill="#D4A017" opacity="0.5"/></g><text x="85" y="102" text-anchor="middle" font-size="9" fill="#888">碰完立刻分开！</text><line x1="155" y1="20" x2="155" y2="140" stroke="#DDD" stroke-width="0.5"/><text x="225" y="18" text-anchor="middle" font-size="12" fill="#C41E3A" font-weight="bold">❌ 错误：正面直碰</text><ellipse cx="225" cy="82" rx="55" ry="10" fill="url(#cymGrad)" stroke="#B8860B" stroke-width="2"/><ellipse cx="225" cy="70" rx="55" ry="10" fill="url(#cymGrad)" stroke="#B8860B" stroke-width="2"/><line x1="225" y1="82" x2="225" y2="70" stroke="#C41E3A" stroke-width="1.5" stroke-dasharray="3,3"/><text x="225" y="102" text-anchor="middle" font-size="9" fill="#C41E3A">声音闷，容易坏</text><text x="150" y="155" text-anchor="middle" font-size="11" fill="#C41E3A" font-weight="bold">⚠️ 关键：30°-45°斜向碰，碰完立刻分开，让声音飞出来！</text></svg><div class="caption">▲ 左边正确：两片镲斜着碰，声音清脆响亮。右边错误：正面直碰声音闷</div></div>
+<h3>使用规律</h3><ul>
+<li><strong>大镲</strong>：打每小节第1拍（强拍），配合大鼓，增加气势</li>
+<li><strong>小镲</strong>：打第1拍和第3拍，或做点缀</li></ul>
+<h3>常见错误</h3><ul>
+<li>❌ 正面直碰 → ✅ <strong>斜着碰</strong></li>
+<li>❌ 碰完贴一起 → ✅ 碰完<strong>立刻分开</strong></li>
+<li>❌ 镲举太高挡脸 → ✅ 放胸前，观众能看到脸</li>
+<li>❌ 跟大鼓节奏不一致 → ✅ 耳朵听大鼓，同拍击打</li></ul>
+<div class="teacher-talk"><strong>📢 教学生时要注意：</strong><br>1. 大镲对一年级有点重，每副大镲可分配两个学生——一人拿一片<br>2. 先练"斜着击掌"，熟练了再拿镲<br>3. "镲就是两只铁盘子，碰一下发出嚓的声音，就像拍手——拍完你不会两只手掌一直贴着对吧？"<br>4. 安全提醒：镲不能对着别人的脸挥舞</div>
+</div>
+
+<div class="card" style="border:2px solid var(--red)"><h2>🔖 教师速查卡（训练现场快速查看）</h2>
+<table><tr><td style="font-weight:700;color:var(--red);width:60px">大鼓</td><td>右手单槌 | 敲中心偏上 | 手腕发力 | 敲完弹起 | 打第1、3拍</td></tr>
+<tr><td style="font-weight:700;color:var(--red)">小鼓</td><td>双手对称握槌 | "像握铅笔" | 手腕发力 | 两边力量均匀</td></tr>
+<tr><td style="font-weight:700;color:var(--red)">大镲</td><td>斜着碰 | 碰完分开 | 打第1拍 | 止音贴身体</td></tr>
+<tr><td style="font-weight:700;color:var(--red)">小镲</td><td>同上 | 声音更轻更短 | 打第1拍或做点缀</td></tr>
+<tr><td style="font-weight:700;color:var(--red)">小号</td><td>一年级<strong>不使用</strong>！肺活量不够，容易头晕</td></tr>
+<tr><td style="font-weight:700;color:var(--red)">4/4拍</td><td>强-弱-次强-弱 | 喊"一-二-三-四" | 大鼓打第1和第3拍</td></tr>
+<tr><td style="font-weight:700;color:var(--red)">速度</td><td>练习从60→80→最终100-120 BPM</td></tr></table>
+</div>
+</div>
+<div class="tab-content" id="tab-student">
+<div class="student-hero"><div class="big-emoji">🥁</div><h2>鼓号队小课堂</h2><p style="color:var(--sub)">一年级 · 我们来打鼓啦！</p></div>
+
+<div class="card"><h2>🎯 第一课：认识我们的乐器朋友</h2>
+<table><tr><td style="font-weight:700">课时</td><td>第1课/共4课</td></tr><tr><td style="font-weight:700">时长</td><td>40分钟</td></tr><tr><td style="font-weight:700">教师需先学完</td><td>模块一</td></tr><tr><td style="font-weight:700">器材</td><td>大鼓、小鼓、大镲、小镲各至少一件</td></tr></table>
+<h3>教学目标</h3><ul><li>学生能说出四种打击乐器的名字</li><li>学生能分辨四种乐器的声音</li><li>学生能跟着老师拍手打四拍子</li></ul>
+<h4>一、热身导入（5分钟）</h4>
+<div class="teacher-talk"><strong>🗣️ 教师的话（可直接照着说）：</strong><br>"同学们，今天奚老师带来了几个特别的朋友，它们会发出特别好玩的声音！你们想不想认识它们呀？在见它们之前，我们先来活动一下小手——跟老师一起拍手！一、二、三、四！"</div>
+<p>带领学生拍手一分钟，从慢到快再到慢。</p>
+<h4>二、认识乐器（15分钟）</h4>
+<p><strong>教师示范：</strong>逐个展示，每件乐器做三件事——说出名字→敲一下让学生听→请2-3个学生试敲。</p>
+<div class="teacher-talk"><strong>🗣️ 教师的话：</strong><br>"看！这个圆圆的大个子叫<strong>大鼓</strong>。听——咚！声音是不是很低很沉？就像打雷一样！谁来试试？"<br>"这个扁扁的小个子叫<strong>小鼓</strong>。听——哒哒哒！清脆吗？像雨点打在窗户上！"<br>"这两个亮闪闪的盘子叫<strong>大镲</strong>。听——嚓！响亮吗？像闪电一样！"<br>"这两个小一点的叫<strong>小镲</strong>。听——叮叮！像不像小铃铛？"</div>
+<h4>三、节奏游戏：模仿小鹦鹉（10分钟）</h4>
+<div class="teacher-talk"><strong>🗣️ 教师的话：</strong><br>"现在我们来玩一个游戏！你们都是小鹦鹉，老师拍一段节奏，你们要学回来哦！看哪只小鹦鹉学得最像！准备——听好——"</div>
+<p><strong>规则：</strong>老师拍一个四拍的节奏型（如啪-啪-啪啪-啪），学生模仿。从简单到稍复杂。</p>
+<h4>四、展示与反馈（5分钟）</h4>
+<p>请3-5个学生上台，每人选一个乐器敲四下（跟老师数"一-二-三-四"），全班鼓掌。</p>
+<h4>五、小结（5分钟）</h4>
+<div class="teacher-talk"><strong>🗣️ 教师的话：</strong><br>"今天真开心！我们认识了四个好朋友——大鼓、小鼓、大镲、小镲。回家跟爸爸妈妈说说你最喜欢哪个？下次课我们就要学怎么敲啦！"</div>
+<div class="warn-box"><strong>⚠️ 课堂管理：</strong>第一次接触乐器学生很兴奋。<strong>规则先说好</strong>——"乐器摆在面前不能碰，老师说请开始才能拿。先乱敲的暂停一次。"</div>
+</div>
+
+<div class="card"><h2>🎯 第二课：跟着节拍走</h2>
+<table><tr><td style="font-weight:700">课时</td><td>第2课/共4课</td></tr><tr><td style="font-weight:700">时长</td><td>40分钟</td></tr><tr><td style="font-weight:700">教师需先学完</td><td>模块二</td></tr><tr><td style="font-weight:700">器材</td><td>不需要乐器（纯节奏课），准备红绿卡纸各一张</td></tr></table>
+<h3>教学目标</h3><ul><li>学生能用拍手稳定打四四拍（8小节以上）</li><li>学生能感受"强拍"和"弱拍"的区别</li><li>学生能在老师指挥下整齐起停</li></ul>
+<h4>一、热身：小士兵走路（5分钟）</h4>
+<div class="teacher-talk"><strong>🗣️ 教师的话：</strong><br>"同学们，今天我们要当小士兵！全体起立——听口令！一、二、三、四、一、二、三、四——数到'一'的时候脚要重重踩下去！"</div>
+<p>围成圆圈，跟口令走。第1步重踩，其他步正常。你喊口令就行。</p>
+<div class="walk-soldier"><div class="step big">🦶</div><div class="step small">🦶</div><div class="step small">🦶</div><div class="step small">🦶</div></div>
+<div style="text-align:center;font-size:12px;color:var(--sub);margin:4px 0">第1步<strong style="color:var(--red)">重重踩</strong>（左脚），第2-4步<strong style="color:#999">轻轻走</strong></div>
+<div class="illust-row">
+<div class="illust" style="flex:auto;max-width:none"><svg viewBox="0 0 260 60" width="260" height="60"><rect x="5" y="8" width="32" height="44" rx="4" fill="#C41E3A"/><text x="14" y="32" font-size="11" fill="#FFF" font-weight="bold">一</text><text x="8" y="46" font-size="8" fill="#FFCCCC">重踩！</text><rect x="52" y="16" width="32" height="36" rx="4" fill="#DDD"/><text x="62" y="38" font-size="10" fill="#999">二</text><rect x="99" y="12" width="32" height="40" rx="4" fill="#E67E00"/><text x="107" y="34" font-size="11" fill="#FFF" font-weight="bold">三</text><text x="102" y="48" font-size="8" fill="#FFDDBB">稍重</text><rect x="146" y="16" width="32" height="36" rx="4" fill="#DDD"/><text x="156" y="38" font-size="10" fill="#999">四</text><text x="195" y="38" font-size="10" fill="#666">→ 再重复：一-二-三-四…</text></svg><div class="caption">▲ 方块越高 = 踩得越重。记住：只有"一"是大力士！</div></div></div>
+<h4>二、新授：大力士和小精灵（10分钟）</h4>
+<div class="teacher-talk"><strong>🗣️ 教师的话：</strong><br>"注意看老师的手——（大力拍）这一下是'大力士'！超重！——（轻轻拍三下）这三下是'小精灵'，轻轻的。看：<strong>大力士</strong>-小精灵-小精灵-小精灵！你们来试试！"</div>
+<h4>三、趣味游戏：节拍红绿灯（15分钟）</h4>
+<p><strong>规则：</strong>举红色卡纸=大力拍（强拍），举绿色=轻轻拍。你随机举牌按四四拍节奏。升级：请学生当"小交警"举牌。</p>
+<h4>四、小组PK（5分钟）</h4>
+<p>分四组，每组拍四小节，评出"最整齐小组"和"最强弱分明小组"。</p>
+<h4>五、小结（5分钟）</h4>
+<div class="teacher-talk"><strong>🗣️ 教师的话：</strong><br>"今天我们学会了当小士兵——第一步重重踩，后面三步轻轻走。回家跟爸爸妈妈比赛，看谁拍手拍得最稳！走路的时候心里默念一-二-三-四！"</div>
+<div class="step-box"><strong>💡 课后练习：</strong>走路时默念"一-二-三-四"，左脚踩"一"（强拍）。不需要器材，走路就能练。</div>
+</div>
+
+<div class="card"><h2>🎯 第三课：第一次拿起鼓棒</h2>
+<table><tr><td style="font-weight:700">课时</td><td>第3课/共4课</td></tr><tr><td style="font-weight:700">时长</td><td>40分钟</td></tr><tr><td style="font-weight:700">教师需先学完</td><td>模块三、模块四</td></tr><tr><td style="font-weight:700">器材</td><td>鼓棒人手一副（可先用筷子替代），小鼓垫或桌面</td></tr></table>
+<h3>教学目标</h3><ul><li>学生能正确握住鼓棒（对称握法）</li><li>学生能在桌面/鼓垫上用正确姿势敲四四拍</li><li>学生能跟口令整齐起停</li></ul>
+<h4>一、发鼓棒啦！（3分钟）</h4>
+<div class="teacher-talk"><strong>🗣️ 教师的话：</strong><br>"同学们，今天要发真正的鼓棒了！但是先说三条纪律——第一，鼓棒不敲人；第二，不敲地板；第三，老师说停马上停。能做到的举手！好，现在每人领一副，拿到后放桌面上，手放膝盖。没听到'开始'不许碰。"</div>
+<div class="warn-box"><strong>⚠️ 关键：</strong>先宣布纪律再发器材。鼓棒对一年级既是乐器也是"武器"，必须建立规矩。</div>
+<h4>二、新授：学握鼓棒（10分钟）</h4>
+<div class="teacher-talk"><strong>🗣️ 教师的话：</strong><br>"看老师的手——鼓棒像一支铅笔，夹在大拇指和食指中间。不要太紧——手心里有一只小蝴蝶，不能捏死它，也不能让它飞走。来，跟着做——"</div>
+<p><strong>逐一检查：</strong>走到每个学生面前，轻轻拉鼓棒。太容易拉出=太松，拉不动=太紧，有一点阻力但能拉出=正好。</p>
+<h4>三、游戏：鼓棒体操（12分钟）</h4>
+<div class="teacher-talk"><strong>🗣️ 教师的话：</strong><br>"现在玩鼓棒体操！听口令——'预备！'鼓棒举胸前！'敲！'桌面敲一下！'停！'鼓棒放回，手放膝盖！看谁反应最快！"</div>
+<p>加速口令，加入节奏："敲-敲-敲-敲（四拍），停！"。这训练的是<strong>起停纪律</strong>——鼓号队合奏最核心的能力。</p>
+<h4>四、小组接力赛（10分钟）</h4>
+<p>每组轮流敲四小节，其他组当评委。评分：①姿势标准②起停整齐③没人抢拍。获胜组口头表扬"最佳小鼓手"。</p>
+<h4>五、小结（5分钟）</h4>
+<div class="teacher-talk"><strong>🗣️ 教师的话：</strong><br>"太棒了！你们已经是小鼓手了！记住秘诀：<strong>像握铅笔、手腕用力、敲完弹起来</strong>。下次课要在真的鼓上敲了，而且所有人要一起合奏！"</div>
+</div>
+
+<div class="card"><h2>🎯 第四课：第一次合奏——零套曲</h2>
+<table><tr><td style="font-weight:700">课时</td><td>第4课/共4课</td></tr><tr><td style="font-weight:700">时长</td><td>40分钟</td></tr><tr><td style="font-weight:700">教师需先学完</td><td>全部模块</td></tr><tr><td style="font-weight:700">器材</td><td>全部打击乐器，按人数分配</td></tr></table>
+<h3>什么是零套曲？</h3>
+<p>少先队鼓号队曲目从简单到复杂分"0套"到"10套"。<strong>零套曲最简单</strong>——没有旋律变化，只有最基本节奏：每拍一下，四四拍，持续8小节。这是一年级鼓号队的起点。</p>
+<h4>零套曲节奏分配</h4>
+<table><tr><th>乐器</th><th>什么时候敲</th><th>节奏型</th></tr>
+<tr><td>🥁 大鼓</td><td>第1拍、第3拍</td><td>咚 - 咚 - | 咚 - 咚 -</td></tr>
+<tr><td>🥁 小鼓</td><td>每拍都敲</td><td>哒哒哒哒 | 哒哒哒哒</td></tr>
+<tr><td>🔔 大镲</td><td>第1拍</td><td>嚓 - - - | 嚓 - - -</td></tr>
+<tr><td>🔔 小镲</td><td>第1拍、第3拍</td><td>叮 - 叮 - | 叮 - 叮 -</td></tr></table>
+<h4>一、分配乐器（5分钟）</h4>
+<p>大鼓选节奏感最稳的学生（1-2人），小鼓选手部协调好的（最多人），镲选反应快的。</p>
+<h4>二、分声部练习（10分钟）</h4>
+<p>按乐器分组：大鼓组左边、小鼓组中间、镲组右边。各组先单独练自己的节奏型3分钟，老师巡回纠正。</p>
+<h4>三、全体合奏（15分钟）</h4>
+<div class="teacher-talk"><strong>🗣️ 教师的话：</strong><br>"好，现在要合在一起了！所有人看我——右手举起就是准备，手往下一挥就是开始！记住：耳朵听大鼓，大鼓是所有人的'队长'！预备——"</div>
+<p>从慢速80开始，练3-5遍，逐步加快到100。最关键：同时开始+同时停止。做到这两点就成功了80%。</p>
+<h4>四、展示（5分钟）</h4>
+<p>完整演奏一遍，可用手机录下来放给学生看。</p>
+<h4>五、小结（5分钟）</h4>
+<div class="teacher-talk"><strong>🗣️ 教师的话：</strong><br>"太厉害了！全班一起完成了一首完整的曲子！你们已经是真正的鼓号队员了！下次我们要学更厉害的曲目——大家回家继续练握鼓棒和打拍子！"</div>
+<div class="tip-box"><strong>💡 给老师：</strong>第一遍合奏肯定乱——正常！不要批评，先稳住大鼓，其他声部慢慢就跟着稳了。零套曲练熟大概需要2-3次课（约2周），不要指望一节课完美。</div>
+</div>
+</div>
+<div class="tab-content" id="tab-tools">
+<div class="card"><h2>🕐 节拍器</h2>
+<div style="text-align:center">
+<div class="bpm-display" id="bpmDisplay">100</div>
+<div class="bpm-label">每分钟节拍数（BPM）</div>
+<div class="beat-indicator" id="beatDots"><div class="beat-dot accent">1</div><div class="beat-dot">2</div><div class="beat-dot">3</div><div class="beat-dot">4</div></div>
+<input type="range" class="tempo-slider" id="tempoSlider" min="40" max="200" value="100" oninput="updateTempo(this.value)">
+<div class="tempo-btns"><button class="tempo-preset" onclick="setTempo(60)">60 超慢</button><button class="tempo-preset" onclick="setTempo(80)">80 慢练</button><button class="tempo-preset active" onclick="setTempo(100)">100 中速</button><button class="tempo-preset" onclick="setTempo(120)">120 行进</button><button class="tempo-preset" onclick="setTempo(140)">140 快速</button></div>
+<div style="margin:10px 0"><span style="font-size:13px;color:var(--sub);margin-right:8px">拍号：</span><button class="sig-btn active" onclick="setTimeSig(4)">4/4拍</button><button class="sig-btn" onclick="setTimeSig(2)">2/4拍</button><button class="sig-btn" onclick="setTimeSig(3)">3/4拍</button></div>
+<button class="btn btn-play" id="metronomeBtn" onclick="toggleMetronome()">▶ 启动节拍器</button></div>
+<div class="tip-box"><strong>💡 建议：</strong>训练初期用60-80慢速，动作正确后再加快。最终表演速度100-120 BPM。<strong>宁可慢而整齐，不要快而散乱。</strong></div></div>
+
+<div class="card"><h2>🎼 节奏编辑器</h2>
+<p style="font-size:13px;color:var(--sub)">点击格子创建节奏型（每格=一个八分音符），然后播放试听。</p>
+<div class="rhythm-grid" id="rhythmGrid"></div>
+<div class="rhythm-label"><span>1</span><span>+</span><span>2</span><span>+</span><span>3</span><span>+</span><span>4</span><span>+</span></div>
+<div class="preset-patterns"><button class="pattern-btn" onclick="loadPreset('allQuarter')">每拍一下（零套曲）</button><button class="pattern-btn" onclick="loadPreset('march')">行进节奏</button><button class="pattern-btn" onclick="loadPreset('double')">双跳节奏</button><button class="pattern-btn" onclick="loadPreset('clear')">清空</button></div>
+<div style="margin-top:10px"><label style="font-size:12px;margin-right:6px">试听乐器：</label><select id="rhythmInst" style="padding:4px 8px;border-radius:6px;border:1px solid var(--border);font-family:inherit"><option value="snare">小鼓</option><option value="bass">大鼓</option><option value="hihat">小镲</option></select><button class="btn btn-play" id="rhythmPlayBtn" onclick="toggleRhythmPlay()" style="font-size:14px;padding:8px 18px;margin-left:8px">▶ 播放</button></div></div>
+
+<div class="card"><h2>🔊 乐器声音试听</h2>
+<p style="font-size:13px;color:var(--sub);margin-bottom:10px">点击按钮试听不同乐器声音（Web Audio合成音色）</p>
+<div style="display:flex;gap:6px;flex-wrap:wrap"><button class="sound-btn" onclick="playDrumSound('bass')">🥁 大鼓</button><button class="sound-btn" onclick="playDrumSound('snare')">🥁 小鼓</button><button class="sound-btn" onclick="playDrumSound('crash')">🔔 大镲</button><button class="sound-btn" onclick="playDrumSound('hihat')">🔔 小镲</button></div>
+<div class="tip-box" style="margin-top:10px"><strong>📱 提示：</strong>这些是浏览器合成的模拟音色。如需更真实的声音，推荐手机安装免费节拍器App（如"专业节拍器"或Soundbrenner），可加载真实鼓采样音色。</div></div>
+</div>
+<div class="tab-content" id="tab-progress">
+<div class="card"><h2>📋 训练进度追踪</h2>
+<p style="color:var(--sub);margin-bottom:12px;font-size:13px">勾选已完成的模块和课程，进度保存在浏览器中，下次打开还在。</p>
+<h3>教师自学进度</h3>
+<div class="checklist" id="teacherProgress"></div>
+<div class="progress-bar"><div class="progress-fill" id="teacherProgressBar" style="width:0%"></div></div>
+<p style="text-align:right;font-size:12px;color:var(--sub)" id="teacherPercent">0% 完成</p>
+<h3 style="margin-top:20px">学生训练进度</h3>
+<div class="checklist" id="studentProgress"></div>
+<div class="progress-bar"><div class="progress-fill" id="studentProgressBar" style="width:0%"></div></div>
+<p style="text-align:right;font-size:12px;color:var(--sub)" id="studentPercent">0% 完成</p>
+<div class="step-box" style="margin-top:14px"><strong>📝 训练日志建议：</strong>每次训练后用手机备忘录记录：日期、出勤人数、练习内容、遇到的问题、下次改进什么。期末总结和来年再带鼓号队时，这些就是最宝贵的经验。</div></div>
+</div>
+</div>
+<script>
+// ===== 标签切换 =====
+function switchTab(n){document.querySelectorAll('.tab-content').forEach(function(e){e.classList.remove('active')});document.querySelectorAll('.tab-btn').forEach(function(e){e.classList.remove('active')});document.getElementById('tab-'+n).classList.add('active');var t=document.querySelectorAll('.tab-btn');for(var i=0;i<t.length;i++){var tx=t[i].textContent;if((n==='teacher'&&tx.indexOf('教师')>=0)||(n==='student'&&tx.indexOf('学生')>=0)||(n==='tools'&&tx.indexOf('节奏')>=0)||(n==='progress'&&tx.indexOf('进度')>=0)){t[i].classList.add('active');break}}if(n==='tools')initRhythmGrid();if(n==='progress')initProgress()}
+
+// ===== 音频引擎 =====
+var audioCtx=null;
+function getCtx(){if(!audioCtx)try{audioCtx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){return null};if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();return audioCtx}
+
+// 节拍器点击音
+function playClick(accent){try{var ctx=getCtx();if(!ctx)return;var o=ctx.createOscillator();var g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=accent?880:600;o.type='sine';g.gain.setValueAtTime(0.25,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.08);o.start(ctx.currentTime);o.stop(ctx.currentTime+0.08)}catch(e){}}
+
+// ===== Web Audio 合成打击乐音色 =====
+function playDrumSound(type){try{var ctx=getCtx();if(!ctx)return;var now=ctx.currentTime;
+if(type==='bass'){var o=ctx.createOscillator();var g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.type='sine';o.frequency.setValueAtTime(150,now);o.frequency.exponentialRampToValueAtTime(40,now+0.08);g.gain.setValueAtTime(0.9,now);g.gain.exponentialRampToValueAtTime(0.001,now+0.35);o.start(now);o.stop(now+0.35)}
+else if(type==='snare'){var n=ctx.createOscillator();var ng=ctx.createGain();n.connect(ng);ng.connect(ctx.destination);n.type='triangle';n.frequency.setValueAtTime(180,now);ng.gain.setValueAtTime(0.3,now);ng.gain.exponentialRampToValueAtTime(0.001,now+0.05);n.start(now);n.stop(now+0.05);var bn=ctx.createBufferSource();var bf=ctx.createBuffer(1,ctx.sampleRate*0.1,ctx.sampleRate);var bd=bf.getChannelData(0);for(var i=0;i<bd.length;i++)bd[i]=(Math.random()*2-1)*Math.exp(-i/(ctx.sampleRate*0.02));bn.buffer=bf;var bg=ctx.createGain();bn.connect(bg);bg.connect(ctx.destination);bg.gain.setValueAtTime(0.5,now);bg.gain.exponentialRampToValueAtTime(0.001,now+0.1);bn.start(now);bn.stop(now+0.1)}
+else if(type==='crash'){var bu=ctx.createBuffer(1,ctx.sampleRate*0.8,ctx.sampleRate);var d=bu.getChannelData(0);for(var i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/(ctx.sampleRate*0.15));var bs=ctx.createBufferSource();bs.buffer=bu;var bg2=ctx.createGain();var bf2=ctx.createBiquadFilter();bs.connect(bf2);bf2.connect(bg2);bg2.connect(ctx.destination);bf2.type='highpass';bf2.frequency.value=3000;bg2.gain.setValueAtTime(0.55,now);bg2.gain.exponentialRampToValueAtTime(0.001,now+0.8);bs.start(now);bs.stop(now+0.8)}
+else if(type==='hihat'){var bu2=ctx.createBuffer(1,ctx.sampleRate*0.12,ctx.sampleRate);var d2=bu2.getChannelData(0);for(var i=0;i<d2.length;i++)d2[i]=(Math.random()*2-1)*Math.exp(-i/(ctx.sampleRate*0.025));var bs2=ctx.createBufferSource();bs2.buffer=bu2;var bg3=ctx.createGain();var bf3=ctx.createBiquadFilter();bs2.connect(bf3);bf3.connect(bg3);bg3.connect(ctx.destination);bf3.type='highpass';bf3.frequency.value=7000;bg3.gain.setValueAtTime(0.3,now);bg3.gain.exponentialRampToValueAtTime(0.001,now+0.08);bs2.start(now);bs2.stop(now+0.1)}
+}catch(e){}}
+
+// ===== 节拍器 =====
+var metro={bpm:100,playing:false,beat:0,id:null,beatsPerBar:4};
+function toggleMetronome(){var btn=document.getElementById('metronomeBtn');if(metro.playing){clearInterval(metro.id);metro.playing=false;metro.beat=0;btn.textContent='▶ 启动节拍器';btn.classList.remove('playing');updateDots(-1);if(typeof rhythmPlaying!=='undefined'&&rhythmPlaying)toggleRhythmPlay()}else{getCtx();metro.playing=true;metro.beat=0;btn.textContent='⏸ 停止节拍器';btn.classList.add('playing');metroTick();metro.id=setInterval(metroTick,(60/metro.bpm)*1000)}}
+function metroTick(){var b=metro.beat%metro.beatsPerBar;updateDots(b);playClick(b===0);metro.beat++}
+function updateDots(active){document.querySelectorAll('.beat-dot').forEach(function(d,i){d.classList.remove('active');if(i===active)d.classList.add('active')})}
+function setTempo(bpm){metro.bpm=bpm;document.getElementById('bpmDisplay').textContent=bpm;document.getElementById('tempoSlider').value=bpm;document.querySelectorAll('.tempo-preset').forEach(function(b){b.classList.remove('active')});event.target.classList.add('active');if(metro.playing){clearInterval(metro.id);metro.beat=0;metro.id=setInterval(metroTick,(60/bpm)*1000)}}
+function updateTempo(bpm){metro.bpm=parseInt(bpm);document.getElementById('bpmDisplay').textContent=bpm;if(metro.playing){clearInterval(metro.id);metro.beat=0;metro.id=setInterval(metroTick,(60/bpm)*1000)}}
+function setTimeSig(beats){metro.beatsPerBar=beats;document.querySelectorAll('.sig-btn').forEach(function(b){b.classList.remove('active')});event.target.classList.add('active');var c=document.getElementById('beatDots');c.innerHTML='';for(var i=0;i<beats;i++){var d=document.createElement('div');d.className='beat-dot'+(i===0?' accent':'');d.textContent=i+1;c.appendChild(d)}}
+
+// ===== 节奏编辑器 =====
+var rhythmCells=[],rhythmPlaying=false,rhythmInterval=null,rhythmBeat=0;
+function initRhythmGrid(){var g=document.getElementById('rhythmGrid');if(g.children.length>0)return;for(var i=0;i<8;i++){var c=document.createElement('div');c.className='rhythm-cell';c.textContent=(i%2===0)?(Math.floor(i/2)+1):'+';c.setAttribute('data-idx',i);c.onclick=function(){var idx=parseInt(this.getAttribute('data-idx'));this.classList.toggle('on');rhythmCells[idx]=this.classList.contains('on')};g.appendChild(c);rhythmCells.push(false)}}
+function loadPreset(p){initRhythmGrid();var cells=document.querySelectorAll('.rhythm-cell');cells.forEach(function(c){c.classList.remove('on')});rhythmCells=new Array(8).fill(false);var presets={allQuarter:[0,2,4,6],march:[0,2,3,4,6],double:[0,1,4,5],clear:[]};(presets[p]||[]).forEach(function(i){cells[i].classList.add('on');rhythmCells[i]=true})}
+function toggleRhythmPlay(){var btn=document.getElementById('rhythmPlayBtn');if(rhythmPlaying){clearInterval(rhythmInterval);rhythmPlaying=false;rhythmBeat=0;btn.textContent='▶ 播放';btn.classList.remove('playing');document.querySelectorAll('.rhythm-cell').forEach(function(c){c.classList.remove('playing-now')})}else{getCtx();rhythmPlaying=true;rhythmBeat=0;btn.textContent='⏸ 停止';btn.classList.add('playing');rhythmPlayBeat();rhythmInterval=setInterval(rhythmPlayBeat,(60/metro.bpm)*1000/2)}}
+function rhythmPlayBeat(){var cells=document.querySelectorAll('.rhythm-cell');cells.forEach(function(c){c.classList.remove('playing-now')});var idx=rhythmBeat%8;if(rhythmCells[idx]){cells[idx].classList.add('playing-now');var inst=document.getElementById('rhythmInst').value;playDrumSound(inst)}rhythmBeat++}
+
+// ===== 进度追踪 =====
+var teacherItems=['模块一：认识少先队鼓号队','模块二：认识四四拍','模块三：大鼓演奏方法','模块四：小鼓演奏方法','模块五：大镲和小镲演奏方法'];
+var studentItems=['第一课：认识我们的乐器朋友','第二课：跟着节拍走','第三课：第一次拿起鼓棒','第四课：第一次合奏——零套曲'];
+function initProgress(){var tc=document.getElementById('teacherProgress');var sc=document.getElementById('studentProgress');if(tc.children.length>0)return;
+teacherItems.forEach(function(item,i){var label=document.createElement('label');var key='t_'+i;var checked=localStorage.getItem(key)==='true';label.innerHTML='<input type="checkbox" '+(checked?'checked':'')+' onchange="saveCheck(\''+key+'\',this.checked)"><span>'+item+'</span>';tc.appendChild(label)});
+studentItems.forEach(function(item,i){var label=document.createElement('label');var key='s_'+i;var checked=localStorage.getItem(key)==='true';label.innerHTML='<input type="checkbox" '+(checked?'checked':'')+' onchange="saveCheck(\''+key+'\',this.checked)"><span>'+item+'</span>';sc.appendChild(label)});
+updateProgressBars()}
+function saveCheck(k,v){localStorage.setItem(k,v);updateProgressBars()}
+function updateProgressBars(){var td=0,sd=0;teacherItems.forEach(function(_,i){if(localStorage.getItem('t_'+i)==='true')td++});studentItems.forEach(function(_,i){if(localStorage.getItem('s_'+i)==='true')sd++});var tp=teacherItems.length>0?Math.round(td/teacherItems.length*100):0;var sp=studentItems.length>0?Math.round(sd/studentItems.length*100):0;document.getElementById('teacherProgressBar').style.width=tp+'%';document.getElementById('studentProgressBar').style.width=sp+'%';document.getElementById('teacherPercent').textContent=tp+'% 完成';document.getElementById('studentPercent').textContent=sp+'% 完成'}
+window.addEventListener('load',function(){updateProgressBars()});
+
+</script>
+</body>
+</html>
